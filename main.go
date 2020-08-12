@@ -19,15 +19,13 @@
 package main
 
 import (
-	"bytes"
-	"image"
 	_ "image/png"
 	"log"
 	"math/rand"
 	"time"
 
 	"github.com/hajimehoshi/ebiten"
-	rmascot "github.com/hajimehoshi/ebiten/examples/resources/images/mascot"
+	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
 
 const (
@@ -51,23 +49,14 @@ func init() {
 	//    This works even on browsers.
 	// 3) Use ebitenutil.NewImageFromFile to create an ebiten.Image directly from a file.
 	//    This also works on browsers.
-	img1, _, err := image.Decode(bytes.NewReader(rmascot.Out01_png))
+	/*img1, _, err := image.Decode(bytes.NewReader(rmascot.Out01_png))
 	if err != nil {
 		log.Fatal(err)
-	}
-	gopher1, _ = ebiten.NewImageFromImage(img1, ebiten.FilterDefault)
-
-	img2, _, err := image.Decode(bytes.NewReader(rmascot.Out02_png))
-	if err != nil {
-		log.Fatal(err)
-	}
-	gopher2, _ = ebiten.NewImageFromImage(img2, ebiten.FilterDefault)
-
-	img3, _, err := image.Decode(bytes.NewReader(rmascot.Out03_png))
-	if err != nil {
-		log.Fatal(err)
-	}
-	gopher3, _ = ebiten.NewImageFromImage(img3, ebiten.FilterDefault)
+	}*/
+	//gopher1, _ = ebiten.NewImageFromImage(img1, ebiten.FilterDefault)
+	gopher1, _, _ = ebitenutil.NewImageFromFile("bropher.png", ebiten.FilterDefault)
+	gopher2, _, _ = ebitenutil.NewImageFromFile("bropher.png", ebiten.FilterDefault)
+	gopher3, _, _ = ebitenutil.NewImageFromFile("bropher.png", ebiten.FilterDefault)
 }
 
 func init() {
@@ -114,12 +103,12 @@ func (m *mascot) Update(screen *ebiten.Image) error {
 		m.vy16 = 0
 	}
 
-	// If the mascto is on the ground, cause an action in random.
+	// If the mascot is on the ground, cause an action in random.
 	if rand.Intn(60) == 0 && m.y16 == 0 {
 		switch rand.Intn(2) {
 		case 0:
 			// Jump.
-			m.vy16 = -240
+			m.vy16 = -320
 		case 1:
 			// Turn.
 			m.vx16 = -m.vx16
@@ -141,6 +130,7 @@ func (m *mascot) Draw(screen *ebiten.Image) {
 		}
 	}
 	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Scale(.5, .5)
 	if m.vx16 < 0 {
 		op.GeoM.Scale(-1, 1)
 		op.GeoM.Translate(width, 0)
