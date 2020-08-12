@@ -52,11 +52,11 @@ func init() {
 	/*img1, _, err := image.Decode(bytes.NewReader(rmascot.Out01_png))
 	if err != nil {
 		log.Fatal(err)
-	}*/
-	//gopher1, _ = ebiten.NewImageFromImage(img1, ebiten.FilterDefault)
-	gopher1, _, _ = ebitenutil.NewImageFromFile("bropher.png", ebiten.FilterDefault)
-	gopher2, _, _ = ebitenutil.NewImageFromFile("bropher.png", ebiten.FilterDefault)
-	gopher3, _, _ = ebitenutil.NewImageFromFile("bropher.png", ebiten.FilterDefault)
+	}
+	gopher1, _ = ebiten.NewImageFromImage(img1, ebiten.FilterDefault) */
+	gopher1, _, _ = ebitenutil.NewImageFromFile("out01.png", ebiten.FilterDefault)
+	gopher2, _, _ = ebitenutil.NewImageFromFile("out02.png", ebiten.FilterDefault)
+	gopher3, _, _ = ebitenutil.NewImageFromFile("out03.png", ebiten.FilterDefault)
 }
 
 func init() {
@@ -130,7 +130,7 @@ func (m *mascot) Draw(screen *ebiten.Image) {
 		}
 	}
 	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Scale(.5, .5)
+	op.GeoM.Scale(.8, .8)
 	if m.vx16 < 0 {
 		op.GeoM.Scale(-1, 1)
 		op.GeoM.Translate(width, 0)
