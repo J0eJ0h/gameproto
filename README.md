@@ -10,5 +10,6 @@ Game Proto in the initial fooling around with ebiten
  - [x] Animate the bropher
  - [x] Code the game of life sample mostly from scratch, but with less suck
  - [ ] Game of life to view port\tiles
- - [ ] Click to change square state in GOL
+ - [x] Click to change square state in GOL
+ - [x] Add per cell aging mechanic
  
