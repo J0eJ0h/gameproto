@@ -2,27 +2,32 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"time"
 
 	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/ebitenutil"
 	"github.com/hajimehoshi/ebiten/inpututil"
 )
 
 // GOL is the game global state for Game Of Life
 type GOL struct {
-	grid     []int
-	width    int
-	height   int
-	frame    int
-	tileSize int
-	v        byte
+	grid        []int
+	width       int
+	height      int
+	frame       int
+	tileSize    int
+	v           byte
+	refresh     float64
+	showRefresh bool
 }
 
 // NewGOL returns a new GOL with the given width and height
 func NewGOL(width, height, tileSize int) *GOL {
 	g := &GOL{width: width, height: height, tileSize: tileSize}
 	g.v = 128
+	g.refresh = 1
 	return g
 }
 
@@ -34,7 +39,7 @@ func (g *GOL) expand(k int) (int, int) {
 	return k % g.width, k / g.width
 }
 func (g *GOL) expandF(k int) (float64, float64) {
-	return float64(k%g.width) * float64(g.tileSize), float64(k/g.width) * float64(g.tileSize)
+	return float64(k % g.width * g.tileSize), float64(k / g.width * g.tileSize)
 }
 
 // UpdateGrid updates a given element of the grid with a new value
@@ -139,26 +144,41 @@ func (g *GOL) Draw(screen *ebiten.Image) {
 		if g.grid[k] == 0 {
 			continue
 		}
-		x, y := g.expandF(k)
+		xl, yl := g.expandF(k)
 		op := &ebiten.DrawImageOptions{}
-		op.GeoM.Translate(x, y)
+		op.GeoM.Translate(xl, yl)
 		screen.DrawImage(tile, op)
 
 	}
-
+	if g.showRefresh {
+		ebitenutil.DebugPrint(screen, fmt.Sprintf("Refresh: %v/sec", 1/g.refresh))
+	}
 }
 
-// Update is the game state update function for GOL
-func (g *GOL) Update(*ebiten.Image) error {
-	g.frame++
+func (g *GOL) doKeyboardUpdate() {
 	if inpututil.IsKeyJustPressed(ebiten.KeyUp) {
 		g.v = 255
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyDown) {
 		g.v = 0
 	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyLeft) {
+		g.refresh = g.refresh * 2
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyRight) {
+		g.refresh = g.refresh / 2
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyR) {
+		g.showRefresh = !g.showRefresh
+	}
+}
+
+// Update is the game state update function for GOL
+func (g *GOL) Update(*ebiten.Image) error {
+	g.frame++
+	g.doKeyboardUpdate()
 	tps := ebiten.MaxTPS()
-	if g.frame%(1*tps) == 0 {
+	if g.refresh == 0 || g.frame%int(math.Ceil(g.refresh*float64(tps))) == 0 {
 		g.DoGrid(g.lifeGrid)
 	}
 	return nil
