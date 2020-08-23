@@ -5,6 +5,8 @@ import (
 )
 
 // MouseState tracks debounces for the mouse to allow MouseDown\Up
+// TODO:  finish other buttons
+// TODO:  event registration (?via channels)
 type MouseState struct {
 	leftNow, leftLast, rightLast, rightNow, midLast, midNow bool
 }

@@ -24,7 +24,9 @@ type GOL struct {
 	vp        viewport
 	mx, my    int
 	isPaused  bool
+	showAge   bool
 	ms        MouseState
+	ageStep   int
 }
 
 type viewport struct {
@@ -37,6 +39,7 @@ func NewGOL(width, height, tileSize int) *GOL {
 	g.v = 128
 	g.refresh = 1
 	g.vp = viewport{0, 0, width, height}
+	g.ageStep = 10
 	return g
 }
 
@@ -108,12 +111,21 @@ func (g *GOL) getNeighborCount(x, y int) int {
 	return pop
 }
 
+func (g *GOL) ageGrid(x, y int) int {
+	v := g.grid[g.flat(x, y)]
+	if v > 0 && v < 256-g.ageStep {
+		return v + g.ageStep
+	}
+	return v
+}
+
 func (g *GOL) lifeGrid(x, y int) int {
 	pop := g.getNeighborCount(x, y)
-	if pop == 3 {
-		return 255
-	}
-	if pop == 2 && g.grid[g.flat(x, y)] > 0 {
+	v := g.grid[g.flat(x, y)]
+	if pop == 3 || (pop == 2 && v > 0) {
+		if v > 0 && v < 256 {
+			return v
+		}
 		return 1
 	}
 	return 0
@@ -160,6 +172,9 @@ func (g *GOL) Draw(screen *ebiten.Image) {
 		xl, yl := g.expandF(k)
 		op := &ebiten.DrawImageOptions{}
 		op.GeoM.Translate(xl, yl)
+		if g.showAge {
+			tile = g.makeTile(byte(g.grid[k]), g.tileSize)
+		}
 		screen.DrawImage(tile, op)
 	}
 	if g.showDebug {
@@ -187,6 +202,9 @@ func (g *GOL) doKeyboardUpdate() {
 	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
 		g.isPaused = !g.isPaused
 	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyV) {
+		g.showAge = !g.showAge
+	}
 }
 
 func (g *GOL) mapLocToTile(x, y int) int {
@@ -195,7 +213,6 @@ func (g *GOL) mapLocToTile(x, y int) int {
 }
 
 func (g *GOL) doMouseUpdate() {
-	// TODO: debounce
 	if g.ms.LeftDown() {
 
 		x, y := ebiten.CursorPosition()
@@ -208,7 +225,6 @@ func (g *GOL) doMouseUpdate() {
 		}
 
 		g.mx, g.my = x/g.tileSize, y/g.tileSize
-
 	}
 }
 
@@ -228,6 +244,7 @@ func (g *GOL) Update(*ebiten.Image) error {
 	}
 	if g.refresh == 0 || g.frame%int(math.Ceil(g.refresh*float64(tps))) == 0 {
 		g.DoGrid(g.lifeGrid)
+		g.DoGrid(g.ageGrid)
 	}
 
 	// Final updates
