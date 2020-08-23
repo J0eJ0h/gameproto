@@ -8,5 +8,7 @@ Game Proto in the initial fooling around with ebiten
  - [ ] Fix the hitbox
  - [ ] Make jumps adapt to screen size
  - [x] Animate the bropher
- - [ ] Code the game of life sample mostly from scratch, but with less suck
+ - [x] Code the game of life sample mostly from scratch, but with less suck
+ - [ ] Game of life to view port\tiles
+ - [ ] Click to change square state in GOL
  
