@@ -44,7 +44,12 @@ func (g *GOL) doKeyboardUpdate() {
 	if ebiten.IsKeyPressed(ebiten.KeyS) || ebiten.IsKeyPressed(ebiten.KeyDown) {
 		g.camera.Position[1] += 1
 	}
-
+	if ebiten.IsKeyPressed(ebiten.KeyQ) {
+		g.camera.Rotation -= 1
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyE) {
+		g.camera.Rotation += 1
+	}
 }
 
 func (g *GOL) mapLocToTile(x, y int) int {

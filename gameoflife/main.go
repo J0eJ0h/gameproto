@@ -15,6 +15,7 @@ type Camera struct {
 	Viewport   f64.Vec2
 	Position   f64.Vec2
 	ZoomFactor float64
+	Rotation   int
 }
 
 func NewCamera(screenWidth, screenHeight float64) *Camera {
@@ -38,6 +39,7 @@ func (c *Camera) worldMatrix() (m ebiten.GeoM) {
 	m.Scale(s, s)
 
 	// Do rotations
+	m.Rotate(float64(c.Rotation) * 2 * math.Pi / 360)
 
 	// Back to screen space
 	m.Translate(c.viewportCenter()[0], c.viewportCenter()[1])
