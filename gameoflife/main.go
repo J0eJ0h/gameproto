@@ -7,7 +7,21 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"golang.org/x/image/math/f64"
 )
+
+type Camera struct {
+	Viewport f64.Vec2
+}
+
+func NewCamera(screenWidth, screenHeight float64) *Camera {
+	return &Camera{Viewport: f64.Vec2{screenWidth, screenWidth}}
+}
+
+func (c *Camera) Render(world, screen *ebiten.Image) {
+	op := &ebiten.DrawImageOptions{}
+	screen.DrawImage(world, op)
+}
 
 // GOL is the game global state for Game Of Life
 type GOL struct {
@@ -19,17 +33,13 @@ type GOL struct {
 	v         byte
 	refresh   float64
 	showDebug bool
-	vp        viewport
 	mx, my    int
 	isPaused  bool
 	showAge   bool
 	ms        MouseState
 	ageStep   int
 	sw, sh    float64
-}
-
-type viewport struct {
-	x, y, w, h float64
+	camera    *Camera
 }
 
 // NewGOL returns a new GOL with the given width and height
@@ -37,7 +47,7 @@ func NewGOL(width, height, tileSize int) *GOL {
 	g := &GOL{width: width, height: height, tileSize: tileSize}
 	g.v = 128
 	g.refresh = 1
-	g.vp = viewport{1, 1, float64(width) - 2, float64(height) - 2}
+	g.camera = NewCamera(16, 12)
 	g.sw, g.sh = 16, 12
 	g.ageStep = 10
 	return g
@@ -99,8 +109,7 @@ func (g *GOL) renderImage() *ebiten.Image {
 func (g *GOL) Draw(screen *ebiten.Image) {
 
 	img := g.renderImage()
-	op := &ebiten.DrawImageOptions{}
-	screen.DrawImage(img, op)
+	g.camera.Render(img, screen)
 
 	if g.showDebug {
 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Refresh: %v/sec", 1/g.refresh), 0, 0)
