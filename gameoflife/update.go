@@ -52,7 +52,7 @@ func (g *GOL) mapLocToTile(x, y int) int {
 }
 
 func (g *GOL) doMouseUpdate() {
-	if g.ms.LeftDown() {
+	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 
 		x, y := g.camera.ScreenToWorld(ebiten.CursorPosition())
 		tx, ty := int(math.Floor(x/float64(g.tileSize))), int(math.Floor(y/float64(g.tileSize)))
