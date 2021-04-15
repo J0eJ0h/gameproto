@@ -1,6 +1,9 @@
 package main
 
-import "math/rand"
+import (
+	"fmt"
+	"math/rand"
+)
 
 func (g *GOL) flat(x, y int) int {
 	return x + y*g.width
@@ -13,24 +16,41 @@ func (g *GOL) expandF(k int) (float64, float64) {
 	return float64((k % g.width) * g.tileSize), float64((k / g.width) * g.tileSize)
 }
 
+func (g *GOL) checkGrid(x, y int) (int, error) {
+	k := g.flat(x, y)
+	if k < 0 || g.width*g.height <= k {
+		return -1, fmt.Errorf("(%v,%v) is out of grid bounds", x, y)
+	}
+	return k, nil
+}
+
 // UpdateGrid updates a given element of the grid with a new value
-func (g *GOL) UpdateGrid(x, y, v int) {
-	g.grid[g.flat(x, y)] = v
+func (g *GOL) UpdateGrid(x, y, v int) error {
+	k, err := g.checkGrid(x, y)
+	if err != nil {
+		return err
+	}
+	g.grid[k] = v
+	return nil
 }
 
 // UpdateGridFlat updates a given element of the grid with a new value
-func (g *GOL) UpdateGridFlat(k, v int) {
+func (g *GOL) updateGridFlat(k, v int) {
 	g.grid[k] = v
 }
 
 // ReadGridFlat gets the current value of a location in the grid
-func (g *GOL) ReadGridFlat(k int) int {
+func (g *GOL) readGridFlat(k int) int {
 	return g.grid[k]
 }
 
 // ReadGrid gets the current value of a location in the grid
-func (g *GOL) ReadGrid(x, y int) int {
-	return g.grid[g.flat(x, y)]
+func (g *GOL) ReadGrid(x, y int) (int, error) {
+	k, err := g.checkGrid(x, y)
+	if err != nil {
+		return 0, err
+	}
+	return g.grid[k], nil
 }
 
 // DoGrid applies a visitor pattern to the grid,

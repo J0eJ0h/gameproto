@@ -8,6 +8,7 @@ import (
 )
 
 func (g *GOL) doKeyboardUpdate() {
+	// game behavior controls
 	if inpututil.IsKeyJustPressed(ebiten.KeyR) {
 		g.v = 255
 	}
@@ -29,26 +30,41 @@ func (g *GOL) doKeyboardUpdate() {
 	if inpututil.IsKeyJustPressed(ebiten.KeyV) {
 		g.showAge = !g.showAge
 	}
+
+	// camera controls
+	if ebiten.IsKeyPressed(ebiten.KeyA) || ebiten.IsKeyPressed(ebiten.KeyLeft) {
+		g.camera.Position[0] -= 1
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyD) || ebiten.IsKeyPressed(ebiten.KeyRight) {
+		g.camera.Position[0] += 1
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyW) || ebiten.IsKeyPressed(ebiten.KeyUp) {
+		g.camera.Position[1] -= 1
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyS) || ebiten.IsKeyPressed(ebiten.KeyDown) {
+		g.camera.Position[1] += 1
+	}
+
 }
 
 func (g *GOL) mapLocToTile(x, y int) int {
-	tx, ty := x/g.tileSize, y/g.tileSize
-	return g.flat(tx, ty)
+	return g.flat(x, y)
 }
 
 func (g *GOL) doMouseUpdate() {
 	if g.ms.LeftDown() {
 
-		x, y := ebiten.CursorPosition()
-		k := g.mapLocToTile(x, y)
+		x, y := g.camera.ScreenToWorld(ebiten.CursorPosition())
+		tx, ty := int(math.Floor(x/float64(g.tileSize))), int(math.Floor(y/float64(g.tileSize)))
 
-		if g.grid[k] == 0 {
-			g.grid[k] = 1
+		v, _ := g.ReadGrid(tx, ty)
+		if v == 0 {
+			v = 1
 		} else {
-			g.grid[k] = 0
+			v = 0
 		}
-
-		g.mx, g.my = x/g.tileSize, y/g.tileSize
+		g.UpdateGrid(tx, ty, v)
+		g.mx, g.my, g.mv = tx, ty, v
 	}
 }
 

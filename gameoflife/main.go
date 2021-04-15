@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"time"
 
@@ -12,34 +13,67 @@ import (
 
 type Camera struct {
 	Viewport f64.Vec2
+	Position f64.Vec2
 }
 
 func NewCamera(screenWidth, screenHeight float64) *Camera {
 	return &Camera{Viewport: f64.Vec2{screenWidth, screenWidth}}
 }
 
+func (c *Camera) viewportCenter() f64.Vec2 {
+	return f64.Vec2{c.Viewport[0] * 0.5, c.Viewport[1] * 0.5}
+}
+
+func (c *Camera) worldMatrix() (m ebiten.GeoM) {
+
+	// Move to position
+	m.Translate(-c.Position[0], -c.Position[1])
+
+	// Center viewport
+	m.Translate(-c.viewportCenter()[0], -c.viewportCenter()[1])
+
+	// Scale camera
+
+	// Do rotations
+
+	// Back to screen space
+	m.Translate(c.viewportCenter()[0], c.viewportCenter()[1])
+	return
+}
+
 func (c *Camera) Render(world, screen *ebiten.Image) {
-	op := &ebiten.DrawImageOptions{}
+	op := &ebiten.DrawImageOptions{GeoM: c.worldMatrix()}
 	screen.DrawImage(world, op)
+}
+
+func (c *Camera) ScreenToWorld(posX, posY int) (float64, float64) {
+	inverseMatrix := c.worldMatrix()
+	if inverseMatrix.IsInvertible() {
+		inverseMatrix.Invert()
+		return inverseMatrix.Apply(float64(posX), float64(posY))
+	} else {
+		// When scaling it can happend that matrix is not invertable
+		return math.NaN(), math.NaN()
+	}
 }
 
 // GOL is the game global state for Game Of Life
 type GOL struct {
-	grid      []int
-	width     int
-	height    int
-	frame     int
-	tileSize  int
-	v         byte
-	refresh   float64
-	showDebug bool
-	mx, my    int
-	isPaused  bool
-	showAge   bool
-	ms        MouseState
-	ageStep   int
-	sw, sh    float64
-	camera    *Camera
+	grid       []int
+	width      int
+	height     int
+	frame      int
+	tileSize   int
+	v          byte
+	refresh    float64
+	showDebug  bool
+	mx, my, mv int
+	isPaused   bool
+	showAge    bool
+	ms         MouseState
+	ageStep    int
+	sw, sh     float64
+	camera     *Camera
 }
 
 // NewGOL returns a new GOL with the given width and height
@@ -113,7 +147,7 @@ func (g *GOL) Draw(screen *ebiten.Image) {
 
 	if g.showDebug {
 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Refresh: %v/sec", 1/g.refresh), 0, 0)
-		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("MP x: %v y: %v", g.mx, g.my), 0, 10)
+		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("MP x: %v y: %v v: %v", g.mx, g.my, g.mv), 0, 10)
 	}
 }
 
