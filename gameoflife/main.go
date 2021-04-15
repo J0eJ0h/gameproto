@@ -68,6 +68,7 @@ type GOL struct {
 	refresh    float64
 	showDebug  bool
 	mx, my, mv int
+	mwx, mwy   float64
 	isPaused   bool
 	showAge    bool
 	ms         MouseState
@@ -148,6 +149,7 @@ func (g *GOL) Draw(screen *ebiten.Image) {
 	if g.showDebug {
 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Refresh: %v/sec", 1/g.refresh), 0, 0)
 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("MP x: %v y: %v v: %v", g.mx, g.my, g.mv), 0, 10)
+		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("MW x: %v y: %v", g.mwx, g.mwy), 0, 20)
 	}
 }
 

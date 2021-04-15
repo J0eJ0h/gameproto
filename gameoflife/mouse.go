@@ -9,6 +9,7 @@ import (
 // TODO:  event registration (?via channels)
 type MouseState struct {
 	leftNow, leftLast, rightLast, rightNow, midLast, midNow bool
+	wheelDx, wheelDy                                        float64
 }
 
 // Update must be added to your update game loop to handle mouse debounces
@@ -21,6 +22,16 @@ func (m *MouseState) Update() {
 
 	m.midLast = m.midNow
 	m.midNow = ebiten.IsMouseButtonPressed(ebiten.MouseButtonMiddle)
+
+	dx, dy := ebiten.Wheel()
+	m.wheelDx += dx
+	m.wheelDy += dy
+}
+
+func (m *MouseState) ConsumeWheel() (dx, dy float64) {
+	dx, dy = m.wheelDx, m.wheelDy
+	m.wheelDx, m.wheelDy = 0, 0
+	return
 }
 
 // LeftDown eturns true if the left mouse button has been pressed since the last call to Update
