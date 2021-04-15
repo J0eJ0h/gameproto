@@ -66,7 +66,9 @@ func (g *GOL) doMouseUpdate() {
 		g.UpdateGrid(tx, ty, v)
 		g.mx, g.my, g.mv = tx, ty, v
 	}
-	g.mwx, g.mwy = g.ms.ConsumeWheel()
+	_, mwy := g.ms.ConsumeWheel()
+	g.camera.ZoomFactor += mwy
+
 }
 
 // Update is the game state update function for GOL

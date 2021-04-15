@@ -12,8 +12,9 @@ import (
 )
 
 type Camera struct {
-	Viewport f64.Vec2
-	Position f64.Vec2
+	Viewport   f64.Vec2
+	Position   f64.Vec2
+	ZoomFactor float64
 }
 
 func NewCamera(screenWidth, screenHeight float64) *Camera {
@@ -33,6 +34,8 @@ func (c *Camera) worldMatrix() (m ebiten.GeoM) {
 	m.Translate(-c.viewportCenter()[0], -c.viewportCenter()[1])
 
 	// Scale camera
+	s := math.Pow(1.01, c.ZoomFactor)
+	m.Scale(s, s)
 
 	// Do rotations
 
@@ -149,7 +152,7 @@ func (g *GOL) Draw(screen *ebiten.Image) {
 	if g.showDebug {
 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Refresh: %v/sec", 1/g.refresh), 0, 0)
 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("MP x: %v y: %v v: %v", g.mx, g.my, g.mv), 0, 10)
-		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("MW x: %v y: %v", g.mwx, g.mwy), 0, 20)
+		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Scale: %v", g.camera.ZoomFactor), 0, 20)
 	}
 }
 
