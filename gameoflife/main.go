@@ -19,7 +19,7 @@ type Camera struct {
 }
 
 func NewCamera(screenWidth, screenHeight float64) *Camera {
-	return &Camera{Viewport: f64.Vec2{screenWidth, screenWidth}}
+	return &Camera{Viewport: f64.Vec2{screenWidth, screenHeight}}
 }
 
 func (c *Camera) viewportCenter() f64.Vec2 {
@@ -87,8 +87,8 @@ func NewGOL(width, height, tileSize int) *GOL {
 	g := &GOL{width: width, height: height, tileSize: tileSize}
 	g.v = 128
 	g.refresh = 1
-	g.camera = NewCamera(16, 12)
 	g.sw, g.sh = 16, 12
+	g.camera = NewCamera(g.sw*float64(g.tileSize), g.sh*float64(g.tileSize))
 	g.ageStep = 10
 	return g
 }
@@ -160,7 +160,7 @@ func (g *GOL) Draw(screen *ebiten.Image) {
 
 // Layout sets the window : screen layout for GOL
 func (g *GOL) Layout(int, int) (int, int) {
-	return int(g.sw) * g.tileSize, int(g.sh) * g.tileSize
+	return int(g.camera.Viewport[0]), int(g.camera.Viewport[1])
 }
 
 func main() {
