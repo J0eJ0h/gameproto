@@ -8,6 +8,9 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+
+	"github.com/j0ej0h/gameproto/gameoflife/grid"
+
 	"golang.org/x/image/math/f64"
 )
 
@@ -64,7 +67,7 @@ func (c *Camera) ScreenToWorld(posX, posY int) (float64, float64) {
 
 // GOL is the game global state for Game Of Life
 type GOL struct {
-	grid       Grid
+	grid       grid.Grid
 	frame      int
 	tileSize   int
 	v          byte
@@ -84,7 +87,7 @@ type GOL struct {
 func NewGOL(width, height, tileSize int) *GOL {
 
 	g := &GOL{tileSize: tileSize}
-	g.grid = FlatGrid(width, height)
+	g.grid = grid.FlatGrid(width, height)
 	g.v = 128
 	g.refresh = 1
 	g.sw, g.sh = 16, 12
@@ -136,7 +139,7 @@ func (g *GOL) renderImage() *ebiten.Image {
 			return v
 		}
 
-		// expand
+		// expandg
 		xl, yl := float64(x*g.tileSize), float64(y*g.tileSize)
 
 		op := &ebiten.DrawImageOptions{}
@@ -167,6 +170,49 @@ func (g *GOL) Draw(screen *ebiten.Image) {
 // Layout sets the window : screen layout for GOL
 func (g *GOL) Layout(int, int) (int, int) {
 	return int(g.camera.Viewport[0]), int(g.camera.Viewport[1])
+}
+
+func randGrid(x, y int) int {
+	if rand.Intn(2) != 0 {
+		return 0
+	}
+	return rand.Intn(256)
+}
+
+func getNeighborCount(g grid.Grid, x, y int) int {
+	pop := 0
+	for xi := x - 1; xi <= x+1; xi++ {
+		for yi := y - 1; yi <= y+1; yi++ {
+			if xi == x && yi == y {
+				continue
+			}
+			if v, err := g.ReadGrid(xi, yi); v > 0 && err == nil {
+				pop++
+			}
+		}
+	}
+	return pop
+}
+
+func (g *GOL) ageGrid(x, y int) int {
+	v, _ := g.grid.ReadGrid(x, y)
+	if v > 0 && v < 256-g.ageStep {
+		return v + g.ageStep
+	}
+	return v
+}
+
+func (g *GOL) lifeGrid(x, y int) int {
+	pop := getNeighborCount(g.grid, x, y)
+	v, _ := g.grid.ReadGrid(x, y)
+	if pop == 3 || (pop == 2 && v > 0) {
+		// preserve age
+		if v > 0 && v < 256 {
+			return v
+		}
+		return 1
+	}
+	return 0
 }
 
 func main() {

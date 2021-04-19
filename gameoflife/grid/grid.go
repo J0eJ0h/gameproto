@@ -1,8 +1,7 @@
-package main
+package grid
 
 import (
 	"fmt"
-	"math/rand"
 )
 
 type Grid interface {
@@ -76,47 +75,4 @@ func (g *flatGrid) DoGrid(f func(int, int) int) {
 		}
 	}
 	g.grid = newGrid
-}
-
-func randGrid(x, y int) int {
-	if rand.Intn(2) != 0 {
-		return 0
-	}
-	return rand.Intn(256)
-}
-
-func getNeighborCount(g Grid, x, y int) int {
-	pop := 0
-	for xi := x - 1; xi <= x+1; xi++ {
-		for yi := y - 1; yi <= y+1; yi++ {
-			if xi == x && yi == y {
-				continue
-			}
-			if v, err := g.ReadGrid(xi, yi); v > 0 && err == nil {
-				pop++
-			}
-		}
-	}
-	return pop
-}
-
-func (g *GOL) ageGrid(x, y int) int {
-	v, _ := g.grid.ReadGrid(x, y)
-	if v > 0 && v < 256-g.ageStep {
-		return v + g.ageStep
-	}
-	return v
-}
-
-func (g *GOL) lifeGrid(x, y int) int {
-	pop := getNeighborCount(g.grid, x, y)
-	v, _ := g.grid.ReadGrid(x, y)
-	if pop == 3 || (pop == 2 && v > 0) {
-		// preserve age
-		if v > 0 && v < 256 {
-			return v
-		}
-		return 1
-	}
-	return 0
 }
