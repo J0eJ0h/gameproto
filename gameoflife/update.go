@@ -52,23 +52,23 @@ func (g *GOL) doKeyboardUpdate() {
 	}
 }
 
-func (g *GOL) mapLocToTile(x, y int) int {
-	return g.flat(x, y)
+func (g *GOL) WorldToTile(x, y float64) (int, int) {
+	return int(math.Floor(x / float64(g.tileSize))), int(math.Floor(y / float64(g.tileSize)))
 }
 
 func (g *GOL) doMouseUpdate() {
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 
 		x, y := g.camera.ScreenToWorld(ebiten.CursorPosition())
-		tx, ty := int(math.Floor(x/float64(g.tileSize))), int(math.Floor(y/float64(g.tileSize)))
+		tx, ty := g.WorldToTile(x, y)
 
-		v, _ := g.ReadGrid(tx, ty)
+		v, _ := g.grid.ReadGrid(tx, ty)
 		if v == 0 {
 			v = 1
 		} else {
 			v = 0
 		}
-		g.UpdateGrid(tx, ty, v)
+		g.grid.UpdateGrid(tx, ty, v)
 		g.mx, g.my, g.mv = tx, ty, v
 	}
 	_, mwy := g.ms.ConsumeWheel()
@@ -91,8 +91,8 @@ func (g *GOL) Update() error {
 		return nil
 	}
 	if g.refresh == 0 || g.frame%int(math.Ceil(g.refresh*float64(tps))) == 0 {
-		g.DoGrid(g.lifeGrid)
-		g.DoGrid(g.ageGrid)
+		g.grid.DoGrid(g.lifeGrid)
+		g.grid.DoGrid(g.ageGrid)
 	}
 
 	// Final updates

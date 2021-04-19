@@ -64,9 +64,7 @@ func (c *Camera) ScreenToWorld(posX, posY int) (float64, float64) {
 
 // GOL is the game global state for Game Of Life
 type GOL struct {
-	grid       []int
-	width      int
-	height     int
+	grid       Grid
 	frame      int
 	tileSize   int
 	v          byte
@@ -84,7 +82,9 @@ type GOL struct {
 
 // NewGOL returns a new GOL with the given width and height
 func NewGOL(width, height, tileSize int) *GOL {
-	g := &GOL{width: width, height: height, tileSize: tileSize}
+
+	g := &GOL{tileSize: tileSize}
+	g.grid = FlatGrid(width, height)
 	g.v = 128
 	g.refresh = 1
 	g.sw, g.sh = 16, 12
@@ -125,23 +125,30 @@ func (g *GOL) makeTile(v byte, tileSize int) *ebiten.Image {
 }
 
 func (g *GOL) renderImage() *ebiten.Image {
-	img := ebiten.NewImage(g.width*g.tileSize, g.height*g.tileSize)
+	minx, miny, maxx, maxy := g.grid.Dim()
+	img := ebiten.NewImage((maxx-minx+1)*g.tileSize, (maxy-miny+1)*g.tileSize)
 	tile := g.makeTile(g.v, g.tileSize)
-	for k := 0; k < g.width*g.height; k++ {
-		if g.grid[k] == 0 {
-			continue
+
+	// Render the whole thing for now
+	g.grid.DoGrid(func(x, y int) int {
+		v, _ := g.grid.ReadGrid(x, y)
+		if v == 0 {
+			return v
 		}
 
 		// expand
-		xl, yl := g.expandF(k)
+		//xl, yl := g.expandF(k)func (g *GOL) expandF(k int) (float64, float64) {
+		xl, yl := float64(x*g.tileSize), float64(y*g.tileSize)
 
 		op := &ebiten.DrawImageOptions{}
 		op.GeoM.Translate(xl, yl)
 		if g.showAge {
-			tile = g.makeTile(byte(g.grid[k]), g.tileSize)
+			tile = g.makeTile(byte(v), g.tileSize)
 		}
 		img.DrawImage(tile, op)
-	}
+		return v
+	})
+
 	return img
 }
 
@@ -166,7 +173,7 @@ func (g *GOL) Layout(int, int) (int, int) {
 func main() {
 	rand.Seed(time.Now().UnixNano())
 	gol := NewGOL(20, 15, 25)
-	gol.DoGrid(randGrid)
+	gol.grid.DoGrid(randGrid)
 
 	ebiten.SetWindowSize(640, 480)
 	ebiten.SetWindowTitle("GOL")
