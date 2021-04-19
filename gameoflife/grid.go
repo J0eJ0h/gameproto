@@ -6,8 +6,15 @@ import (
 )
 
 type Grid interface {
+	// ReadGrid gets the current value of a location in the grid
 	ReadGrid(x, y int) (int, error)
+
+	// UpdateGrid updates a given element of the grid with a new value
 	UpdateGrid(x, y, v int) error
+
+	// DoGrid applies a visitor pattern to the grid,
+	// replacing each element with the result
+	// after calculating the updates
 	DoGrid(f func(int, int) int)
 
 	// Dim returns the minx, miny, maxx and maxy values for the grid
@@ -32,15 +39,6 @@ func (g *flatGrid) flat(x, y int) int {
 	return x + y*g.width
 }
 
-/*
-func (g *GOL) expand(k int) (int, int) {
-	return k % g.width, k / g.width
-}
-func (g *GOL) expandF(k int) (float64, float64) {
-	return float64((k % g.width) * g.tileSize), float64((k / g.width) * g.tileSize)
-}
-*/
-
 func (g *flatGrid) checkGrid(x, y int) (int, error) {
 	k := g.flat(x, y)
 	if k < 0 || g.width*g.height <= k {
@@ -49,7 +47,6 @@ func (g *flatGrid) checkGrid(x, y int) (int, error) {
 	return k, nil
 }
 
-// ReadGrid gets the current value of a location in the grid
 func (g *flatGrid) ReadGrid(x, y int) (int, error) {
 	k, err := g.checkGrid(x, y)
 	if err != nil {
@@ -58,7 +55,6 @@ func (g *flatGrid) ReadGrid(x, y int) (int, error) {
 	return g.grid[k], nil
 }
 
-// UpdateGrid updates a given element of the grid with a new value
 func (g *flatGrid) UpdateGrid(x, y, v int) error {
 	k, err := g.checkGrid(x, y)
 	if err != nil {
@@ -72,20 +68,6 @@ func (g *flatGrid) Dim() (int, int, int, int) {
 	return 0, 0, g.width - 1, g.height - 1
 }
 
-/*/ UpdateGridFlat updates a given element of the grid with a new value
-func (g *GOL) updateGridFlat(k, v int) {
-	g.grid[k] = v
-}
-
-// ReadGridFlat gets the current value of a location in the grid
-func (g *GOL) readGridFlat(k int) int {
-	return g.grid[k]
-}
-*/
-
-// DoGrid applies a visitor pattern to the grid,
-// replacing each element with the result
-// after calculating the updates
 func (g *flatGrid) DoGrid(f func(int, int) int) {
 	newGrid := make([]int, g.width*g.height)
 	for y := 0; y < g.height; y++ {
@@ -110,14 +92,6 @@ func getNeighborCount(g Grid, x, y int) int {
 			if xi == x && yi == y {
 				continue
 			}
-			/*
-				if xi < 0 || xi >= g.width || yi < 0 || yi >= g.height {
-					continue
-				}
-				if g.grid[g.flat(xi, yi)] > 0 {
-					pop++
-				}
-			*/
 			if v, err := g.ReadGrid(xi, yi); v > 0 && err == nil {
 				pop++
 			}

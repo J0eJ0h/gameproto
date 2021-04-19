@@ -137,7 +137,6 @@ func (g *GOL) renderImage() *ebiten.Image {
 		}
 
 		// expand
-		//xl, yl := g.expandF(k)func (g *GOL) expandF(k int) (float64, float64) {
 		xl, yl := float64(x*g.tileSize), float64(y*g.tileSize)
 
 		op := &ebiten.DrawImageOptions{}
